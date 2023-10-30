@@ -1,11 +1,16 @@
-# HCI-FSP
-Real time navigation system for bikes - flutter application
+# fsp
 
-Sprint Week 1:
- - Installation and setting up the flutter environment.
- - Mobile application layout (Front end).
- - Methodoogy to overlay the bike routes on google maps interface.
+A new Flutter project.
 
-Sprint Week 2:
+## Getting Started
 
-Sprint Week 3:
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
