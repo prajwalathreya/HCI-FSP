@@ -1,16 +1,17 @@
-# fsp
+# HCI - FSP
+# Bike Navigation System
 
-A new Flutter project.
+# Real Time Navigation for bikers around Chicago
 
-## Getting Started
+# Sprint 1:
+## Environment Installation
+## Mobile Application layout in Flutter with the different pages
+## Overlaying bike paths in google maps
 
-This project is a starting point for a Flutter application.
+# Sprint 2
+## Public transport station locator with our app
+## SOS Button
+## Integration of both front end and backend
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Sprint 3
+## Testing and Improvements if any.
