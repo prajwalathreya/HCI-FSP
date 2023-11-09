@@ -6,12 +6,13 @@ class MapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Google Maps"),
+        title: Text("Preview Map"),
       ),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
-          target: LatLng(31.7749, -130.4194), // Initial map coordinates
-          zoom: 6.0, // Zoom level
+          target: LatLng(
+              41.87147111568681, -87.66197876214603), // Initial map coordinates
+          zoom: 14.0, // Zoom level
         ),
         onMapCreated: (GoogleMapController controller) {
           // You can use the controller to interact with the map.
