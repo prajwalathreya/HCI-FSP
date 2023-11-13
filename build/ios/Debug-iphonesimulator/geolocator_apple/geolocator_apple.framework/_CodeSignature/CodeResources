@@ -18,7 +18,7 @@
 		</data>
 		<key>Headers/GeolocationHandler.h</key>
 		<data>
-		RtIyfhQ70hNA04nYslYOEzK3Hp8=
+		Vl1z+hphClzNCmvTZ+d0FADXT2E=
 		</data>
 		<key>Headers/GeolocationHandler_Test.h</key>
 		<data>
@@ -54,7 +54,7 @@
 		</data>
 		<key>Headers/PermissionHandler.h</key>
 		<data>
-		NQKIK4CfdX2Qbt5jRzn6v1Xhjlc=
+		5202wozEVwNPdgl3uezTTbGeDlg=
 		</data>
 		<key>Headers/PermissionUtils.h</key>
 		<data>
@@ -62,7 +62,7 @@
 		</data>
 		<key>Headers/PositionStreamHandler.h</key>
 		<data>
-		7k7DBuDvob8wOxXrhVIY7Jwi04I=
+		+1VLSqtYa8KqnJXN1ybLBwdlEbA=
 		</data>
 		<key>Headers/ServiceStatus.h</key>
 		<data>
@@ -72,13 +72,17 @@
 		<data>
 		VXyxDIinJlDGWNPJJdWSUxRzfaA=
 		</data>
+		<key>Headers/geolocator_apple-umbrella.h</key>
+		<data>
+		+vNmOcliBQNvbyuW10PuLiUkxqQ=
+		</data>
 		<key>Info.plist</key>
 		<data>
 		JNjKY3hMIPM1Md85BGHukEc+djI=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
-		NLQCcZHUXHVDtciVXgIh5fDoJCQ=
+		Gy5vpxa5a5/YjCuk09lBkPhyP1k=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -108,7 +112,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			wNjjJzE3zIF7wEzCDeF8sAVQLsaXKJPL1VYbFgaihq8=
+			TyS1M2oJ3Vhr5FidFdMzMHlo2WVpIMLed3hdzFHVHfE=
 			</data>
 		</dict>
 		<key>Headers/GeolocationHandler_Test.h</key>
@@ -171,7 +175,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			4g7HWyNsAGg51oGsdtwjJX9V1pLkKTY/zcyE9tuQuo0=
+			DYw1FL2/rapLFlLFxwngOVvvu9bpSRlcafveqq+YGHI=
 			</data>
 		</dict>
 		<key>Headers/PermissionUtils.h</key>
@@ -185,7 +189,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			udU9GcHWMyNTg1Id90VVzYzWkw3LOMLKK2oxa2yb+aQ=
+			HJPHfxZ5MeNNK+sh//54o+csFBI4pBzRgec3nTDV4Rs=
 			</data>
 		</dict>
 		<key>Headers/ServiceStatus.h</key>
@@ -202,11 +206,18 @@
 			3Qb3pZWmYMFLasl8dcK0uaxdOGWTo+4Qu4aDEkncIZo=
 			</data>
 		</dict>
+		<key>Headers/geolocator_apple-umbrella.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			PPNg3QieTIptjo1+ncwmB/wd7sAsK7keD6F8yJixHh0=
+			</data>
+		</dict>
 		<key>Modules/module.modulemap</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ogvfZwdVZsGObEeIcyHeir8FGKKDOhnHK4Z8sPgZH8k=
+			GAWRSBKuO0R+E4Ni7OYPwOXb//KDlcxzXVDVVPxY37A=
 			</data>
 		</dict>
 	</dict>
