@@ -208,7 +208,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
               _controller = controller;
               if (!_hasNavigationStarted) {
                 _startBikeNavigation();
-                //_recenter();
+                _recenter(); // should comment out
                 _hasNavigationStarted = true;
               }
               if (_isNightMode) {
@@ -314,11 +314,12 @@ class _RealtimeNavState extends State<RealtimeNav> {
       double tilt = _calculateTilt(bearing);
       if (_isSatelliteView || _isNightMode) {
         // For satellite view, set tilt to 0
-        tilt = 45.0;
+        tilt = 40.0;
+        // zoom :15; // comment out
       }
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
         target: widget.startLocation,
-        zoom: 14.0,
+        zoom: 17.0,
         bearing: bearing,
         tilt: tilt,
       )));
