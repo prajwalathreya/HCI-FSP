@@ -32,15 +32,15 @@
 ## Please install flutter and cocoapods in your system.
 ## clone the entire repository using the url - https://github.com/prajwalathreya/HCI-FSP.git  . You can do "git clone URL".
 ## Then in your local please go to the cloned directory i.e inside HCI-FSP and run the following commands in your terminal:
-### 1- flutter pub get
+## 1- "flutter pub get"
 ### Now select and IDE and open the project HCI-FSP and then select your device (iOS simulator) and then run the first command again.
 ### Please make sure you are in the project directory and run the following command
-### 2- flutter run
+## 2- "flutter run"
 
-## you should be able to run our application by following the above steps. If you run into any issues please contact us.
+### you should be able to run our application by following the above steps. If you run into any issues please contact us.
 ## Prajwal Athreya Jagadish - pathre2@uic.edu
 ## Sachin Srinivas - ssrini52@uic.edu
 
-# PS : Please make sure you have the required versions of softwares.
+## PS : Please make sure you have the required versions of softwares.
 
 # Thank You!
