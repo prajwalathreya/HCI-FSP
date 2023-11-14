@@ -241,6 +241,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/services.dart';
 
 class RealtimeNav extends StatefulWidget {
   final LatLng startLocation;
@@ -270,10 +271,30 @@ class _RealtimeNavState extends State<RealtimeNav> {
   FlutterTts flutterTts = FlutterTts();
   bool isMuted = false;
   bool _hasNavigationStarted = false;
+  late String _darkMapStyle;
+  late String _lightMapStyle;
 
   late StreamSubscription<Position> _positionStream;
 
   _RealtimeNavState({required this.locationUpdateController});
+
+  Future<void> _loadMapStyles() async {
+    _darkMapStyle = await rootBundle.loadString('assets/map_style/dark.json');
+    _lightMapStyle = await rootBundle.loadString('assets/map_style/light.json');
+  }
+
+  void _toggleNightMode() {
+    setState(() {
+      _isNightMode = !_isNightMode;
+      if (_controller != null) {
+        if (_isNightMode) {
+          _controller?.setMapStyle(_darkMapStyle);
+        } else {
+          _controller?.setMapStyle(_lightMapStyle);
+        }
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -312,6 +333,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
         _speakNavigationDirections();
       }
     });
+    _loadMapStyles();
   }
 
   @override
@@ -415,7 +437,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
     return Stack(
       children: [
         Padding(
-          padding: EdgeInsets.only(bottom: 7.0, left: 5.0),
+          padding: EdgeInsets.only(bottom: 0, left: 0, right: 0),
           child: GoogleMap(
             onMapCreated: (controller) {
               _controller = controller;
@@ -423,6 +445,11 @@ class _RealtimeNavState extends State<RealtimeNav> {
                 _startBikeNavigation();
                 //_recenter();
                 _hasNavigationStarted = true;
+              }
+              if (_isNightMode) {
+                //controller.setMapStyle(_darkMapStyle);
+                //_toggleNightMode();
+                _controller?.setMapStyle(_darkMapStyle);
               }
             },
             initialCameraPosition: CameraPosition(
@@ -622,7 +649,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
     final apiUrl = 'https://maps.googleapis.com/maps/api/directions/json?'
         'origin=${widget.startLocation.latitude},${widget.startLocation.longitude}&'
         'destination=${widget.destination.latitude},${widget.destination.longitude}&'
-        'mode=transit&key=$apiKey';
+        'mode=transit&alternatives=true&key=$apiKey';
 
     final response = await http.get(Uri.parse(apiUrl));
 
