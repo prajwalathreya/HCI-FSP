@@ -1,4 +1,3 @@
-
 // import 'dart:async';
 // import 'package:flutter/material.dart';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -242,23 +241,23 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_tts/flutter_tts.dart';
- 
+
 class RealtimeNav extends StatefulWidget {
   final LatLng startLocation;
   final LatLng destination;
   final StreamController<LatLng> locationUpdateController;
- 
+
   RealtimeNav({
     required this.startLocation,
     required this.destination,
     required this.locationUpdateController,
   });
- 
+
   @override
   _RealtimeNavState createState() =>
       _RealtimeNavState(locationUpdateController: locationUpdateController);
 }
- 
+
 class _RealtimeNavState extends State<RealtimeNav> {
   GoogleMapController? _controller;
   final StreamController<LatLng> locationUpdateController;
@@ -270,15 +269,16 @@ class _RealtimeNavState extends State<RealtimeNav> {
   bool _isNightMode = false; // for night mode
   FlutterTts flutterTts = FlutterTts();
   bool isMuted = false;
- 
+  bool _hasNavigationStarted = false;
+
   late StreamSubscription<Position> _positionStream;
- 
+
   _RealtimeNavState({required this.locationUpdateController});
- 
+
   @override
   void initState() {
     super.initState();
- 
+
     // Subscribe to location updates
     _positionStream = Geolocator.getPositionStream(
       desiredAccuracy: LocationAccuracy.best,
@@ -289,13 +289,13 @@ class _RealtimeNavState extends State<RealtimeNav> {
       });
       _controller?.animateCamera(CameraUpdate.newLatLng(_currentLocation));
     });
- 
+
     widget.locationUpdateController.stream.listen((location) async {
       setState(() {
         _currentLocation = location;
       });
       _controller?.animateCamera(CameraUpdate.newLatLng(location));
- 
+
       // Configure text to speech only once
       flutterTts.setStartHandler(() {
         print("Text to speech started");
@@ -306,21 +306,21 @@ class _RealtimeNavState extends State<RealtimeNav> {
       flutterTts.setErrorHandler((msg) {
         print("Text to speech Error: $msg");
       });
- 
+
       // Start navigation directions
       if (!_isNightMode && !_showBusStops) {
         _speakNavigationDirections();
       }
     });
   }
- 
+
   @override
   void dispose() {
     // Cancel the location updates stream when the widget is disposed
     _positionStream.cancel();
     super.dispose();
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -340,7 +340,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
-children: [
+        children: [
           FloatingActionButton(
             heroTag: 'zoomInButton',
             onPressed: _zoomIn,
@@ -410,7 +410,7 @@ children: [
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
- 
+
   Widget _buildMap() {
     return Stack(
       children: [
@@ -419,6 +419,11 @@ children: [
           child: GoogleMap(
             onMapCreated: (controller) {
               _controller = controller;
+              if (!_hasNavigationStarted) {
+                _startBikeNavigation();
+                //_recenter();
+                _hasNavigationStarted = true;
+              }
             },
             initialCameraPosition: CameraPosition(
               target: widget.startLocation,
@@ -475,16 +480,6 @@ children: [
               ),
               ElevatedButton(
                 onPressed: () {
-                  _startBikeNavigation();
-                  setState(() {
-                    // _showbikepath = true;
-                  });
-                  // _getBusStops();
-                },
-                child: Text('Bike Path Navigation'),
-              ),
-              ElevatedButton(
-                onPressed: () {
                   setState(() {
                     _showBusStops = true;
                   });
@@ -498,6 +493,7 @@ children: [
       ],
     );
   }
+
 //--------------------till here
   void _recenter() async {
     final GoogleMapController controller = _controller!;
@@ -507,7 +503,7 @@ children: [
       widget.destination.latitude,
       widget.destination.longitude,
     );
- 
+
     LatLngBounds bounds = LatLngBounds(
       southwest: LatLng(
         _currentLocation.latitude,
@@ -515,14 +511,14 @@ children: [
       ),
       northeast: widget.destination,
     );
- 
+
     double padding = 50.0;
- 
+
     CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(
       bounds,
       padding,
     );
- 
+
     controller.animateCamera(cameraUpdate);
     double tilt = _calculateTilt(bearing);
     Future.delayed(Duration(milliseconds: 500), () {
@@ -539,6 +535,7 @@ children: [
       )));
     });
   }
+
   void _showSOSDialog() {
     showDialog(
       context: context,
@@ -567,26 +564,27 @@ children: [
       },
     );
   }
- 
+
   void _startBikeNavigation() async {
-    if (!_isNightMode &&!_showBusStops){
+    if (!_isNightMode && !_showBusStops) {
       _speakNavigationDirections();
     }
- 
+
     // Existing code...
-    const apiKey = 'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; // Replace with your API key
+    const apiKey =
+        'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; // Replace with your API key
     final origin =
         '${widget.startLocation.latitude},${widget.startLocation.longitude}';
     final destination =
         '${widget.destination.latitude},${widget.destination.longitude}';
     final apiUrl = 'https://maps.googleapis.com/maps/api/directions/json?'
         'origin=$origin&destination=$destination&mode=bicycling&key=$apiKey';
- 
+
     final response = await http.get(Uri.parse(apiUrl));
- 
+
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
- 
+
       if (data['status'] == 'OK') {
         final List<LatLng> points =
             _decodePolyline(data['routes'][0]['overview_polyline']['points']);
@@ -596,16 +594,16 @@ children: [
           width: 5,
           points: points,
         );
- 
+
         LatLngBounds polylineBounds = _getPolylineBounds(points);
- 
+
         _controller!.animateCamera(
           CameraUpdate.newLatLngBounds(
             polylineBounds,
             50.0,
           ),
         );
- 
+
         setState(() {
           _polylines = {..._polylines, polyline};
         });
@@ -614,34 +612,34 @@ children: [
       }
     } else {
       print('Failed to fetch directions. Status code: ${response.statusCode}');
-    
     }
-    
   }
- 
+
   void _getBusStops() async {
     // Existing code...
-    const apiKey = 'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; // Replace with your API key
+    const apiKey =
+        'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; // Replace with your API key
     final apiUrl = 'https://maps.googleapis.com/maps/api/directions/json?'
         'origin=${widget.startLocation.latitude},${widget.startLocation.longitude}&'
         'destination=${widget.destination.latitude},${widget.destination.longitude}&'
         'mode=transit&key=$apiKey';
- 
+
     final response = await http.get(Uri.parse(apiUrl));
- 
+
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
- 
+
       if (data['status'] == 'OK') {
         _displayBusStops(data['routes'][0]['legs'][0]['steps']);
       } else {
         print('Transit API request failed with status: ${data['status']}');
       }
     } else {
-      print('Failed to fetch transit information. Status code: ${response.statusCode}');
+      print(
+          'Failed to fetch transit information. Status code: ${response.statusCode}');
     }
   }
- 
+
   void _displayBusStops(List<dynamic> steps) {
     // Existing code...
     Set<Marker> busStopMarkers = {};
@@ -651,52 +649,53 @@ children: [
           step['start_location']['lat'],
           step['start_location']['lng'],
         );
- 
+
         Marker busStopMarker = Marker(
           markerId: MarkerId('busStop-${busStopLocation.hashCode}'),
           position: busStopLocation,
           infoWindow: InfoWindow(title: 'Bus Stop'),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         );
- 
+
         busStopMarkers.add(busStopMarker);
       }
     }
- 
+
     setState(() {
       _busStopMarkers = busStopMarkers;
     });
   }
- 
+
   LatLngBounds _getPolylineBounds(List<LatLng> points) {
     // Existing code...
     double minLat = double.infinity;
     double minLng = double.infinity;
     double maxLat = double.negativeInfinity;
     double maxLng = double.negativeInfinity;
- 
+
     for (LatLng point in points) {
       double lat = point.latitude;
       double lng = point.longitude;
- 
+
       minLat = min(minLat, lat);
       minLng = min(minLng, lng);
       maxLat = max(maxLat, lat);
       maxLng = max(maxLng, lng);
     }
- 
+
     return LatLngBounds(
       southwest: LatLng(minLat, minLng),
       northeast: LatLng(maxLat, maxLng),
     );
   }
- 
+
   List<LatLng> _decodePolyline(String encoded) {
     // Existing code...
     List<LatLng> points = [];
     int index = 0, len = encoded.length;
     int lat = 0, lng = 0;
- 
+
     while (index < len) {
       int b, shift = 0, result = 0;
       do {
@@ -706,7 +705,7 @@ children: [
       } while (b >= 0x20);
       int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
       lat += dlat;
- 
+
       shift = 0;
       result = 0;
       do {
@@ -716,12 +715,12 @@ children: [
       } while (b >= 0x20);
       int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
       lng += dlng;
- 
+
       points.add(LatLng((lat / 1E5), (lng / 1E5)));
     }
     return points;
   }
- 
+
   double _calculateBearing(
     double lat1,
     double lon1,
@@ -729,61 +728,58 @@ children: [
     double lon2,
   ) {
     // Existing code...
- 
+
     double startLat = _degreesToRadians(lat1);
     double startLong = _degreesToRadians(lon1);
     double endLat = _degreesToRadians(lat2);
     double endLong = _degreesToRadians(lon2);
- 
+
     double dLong = endLong - startLong;
- 
-    double dPhi = log(
- 
-      tan(endLat / 2.0 + pi / 4.0) /
-          tan(startLat / 2.0 + pi / 4.0));
- 
+
+    double dPhi =
+        log(tan(endLat / 2.0 + pi / 4.0) / tan(startLat / 2.0 + pi / 4.0));
+
     double bearing = atan2(dLong, dPhi);
- 
+
     bearing = _radiansToDegrees(bearing);
     bearing = (bearing + 360.0) % 360.0;
- 
+
     return bearing;
   }
- 
+
   double _radiansToDegrees(double radians) {
     // Existing code...
     return radians * (180.0 / pi);
   }
- 
+
   double _degreesToRadians(double degrees) {
     // Existing code...
     return degrees * (pi / 180.0);
   }
- 
+
   double _calculateTilt(double bearing) {
     // Existing code...
     const double maxTilt = 70.0;
     return _clamp(bearing.abs(), 0.0, maxTilt);
   }
- 
+
   double _clamp(double value, double min, double max) {
     // Existing code...
     return value.clamp(min, max);
   }
- 
+
   void _zoomIn() {
     _controller?.animateCamera(CameraUpdate.zoomIn());
   }
- 
+
   void _zoomOut() {
     _controller?.animateCamera(CameraUpdate.zoomOut());
   }
-  void _speakNavigationDirections() async{
+
+  void _speakNavigationDirections() async {
     //using text to speech
     if (!isMuted) {
       await flutterTts.speak("Start Navigation");
     }
   }
- 
 }
- 
