@@ -10,7 +10,7 @@ class NavigationPage extends StatefulWidget {
 }
 
 class _NavigationPageState extends State<NavigationPage> {
-  String _selectedItem = "Long and Straight Roads"; // Initialize with a default value
+  // String _selectedItem = "Long and Straight Roads"; // Initialize with a default value
 
   final _startSearchFieldController = TextEditingController();
   final _endSearchFieldController = TextEditingController();
@@ -48,7 +48,7 @@ class _NavigationPageState extends State<NavigationPage> {
     startFocusNode = FocusNode();
     endFocusNode = FocusNode();
 
-    getCurrentLocation(); // Call to get the initial current location
+    
   }
 
   void getCurrentLocation() async {
@@ -73,12 +73,12 @@ class _NavigationPageState extends State<NavigationPage> {
           ),
         );
         _startSearchFieldController.text = "Current Location";
-        isLoading = false; // Hide loading feedback
+        isLoading = false; // Hide feedback
         isMarkerClicked = false; // Reset marker clicked state
       });
     } catch (e) {
       setState(() {
-        isLoading = false; // Hide loading feedback on error
+        isLoading = false; // Hides loading feedback on error
       });
       print("Error getting current location: $e");
     }
@@ -107,12 +107,12 @@ class _NavigationPageState extends State<NavigationPage> {
               child: GestureDetector(
                 onTap: () {
                   setState(() {
-                    isMarkerClicked = true; // Set marker clicked state
+                    isMarkerClicked = true; //marker clicked state
                   });
                   getCurrentLocation();
                 },
                 child: Stack(
-                  alignment: Alignment.centerLeft, // Adjusted alignment
+                  alignment: Alignment.centerLeft, //Alignment
                   children: [
                     TextField(
                       controller: _startSearchFieldController,
@@ -122,13 +122,13 @@ class _NavigationPageState extends State<NavigationPage> {
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: "Start Location",
-                        // fillColor: Colors.white, // Highlight color for start location
+                        
                         filled: _startSearchFieldController.text.isNotEmpty &&
                             startPosition != null,
                         suffixIcon: isMarkerClicked
                             ? SizedBox(
-                                width: 24.0, // Adjusted width
-                                height: 24.0, // Adjusted height
+                                width: 24.0, // circular icon width
+                                height: 24.0, // circular icon height
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.0,
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
@@ -161,7 +161,7 @@ class _NavigationPageState extends State<NavigationPage> {
                     ),
                     Positioned(
                       right: 50.0,
-                      // left: 0.0, // Adjusted position
+                      
                       child: Icon(Icons.location_on, color: Colors.red),
                     ),
                   ],
@@ -182,7 +182,7 @@ class _NavigationPageState extends State<NavigationPage> {
                   border: OutlineInputBorder(),
                   labelText: "End Location",
                   
-                  // fillColor: Colors.white, // Highlight color for end location
+                  
                   filled: _endSearchFieldController.text.isNotEmpty,
                   suffixIcon: _endSearchFieldController.text.isNotEmpty
                       ? IconButton(
