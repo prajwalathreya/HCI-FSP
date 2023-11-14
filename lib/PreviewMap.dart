@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_place/google_place.dart';
 import 'package:fsp/MapUtils.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' show Polyline, PolylineId;
+// import 'package:google_maps_flutter/google_maps_flutter.dart' show Polyline, PolylineId;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:fsp/RealtimeNav.dart';
+// import 'package:fsp/RealtimeNav.dart';
 
 class PreviewScreen extends StatefulWidget {
   final DetailsResult? startPosition;
@@ -27,6 +28,7 @@ class _MapScreenState extends State<PreviewScreen> {
   List<Polyline> _polylines = [];
   late String _selectedPolylineDistance = '';
   StreamController<LatLng> _locationUpdateController = StreamController<LatLng>();
+  // int _selectedPolylineIndex = -1;
 
   Future<List<List<LatLng>>> getDirections() async {
     final apiKey = 'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY';
@@ -66,30 +68,30 @@ class _MapScreenState extends State<PreviewScreen> {
     }
   }
 
-  void _addPolylines() async {
-    List<List<LatLng>> routes = await getDirections();
+void _addPolylines() async {
+  List<List<LatLng>> routes = await getDirections();
 
-    _polylines.clear(); // Clear previous polylines
+  _polylines.clear(); // Clear previous polylines
 
-    for (int i = 0; i < routes.length; i++) {
-      PolylineId polylineId = PolylineId('polyline_$i');
-      Color color = _getRandomColor();
-      _polylines.add(Polyline(
-        polylineId: polylineId,
-        color: color,
-        points: routes[i],
-        onTap: () {
-          _onPolylineTapped(routes[i]);
-        },
-      ));
-    }
-
-    // Set the selected polyline distance to the distance of the first polyline
-    double distance = _calculateDistance(routes[0]);
-    _selectedPolylineDistance = distance.toStringAsFixed(2);
-
-    setState(() {});
+  for (int i = 0; i < routes.length; i++) {
+    PolylineId polylineId = PolylineId('polyline_$i');
+    Color color = _getRandomColor();
+    _polylines.add(Polyline(
+      polylineId: polylineId,
+      color: color,
+      points: routes[i],
+      onTap: () {
+        _onPolylineTapped(routes[i]);
+      },
+    ));
   }
+
+  // Set the selected polyline distance to the distance of the first polyline
+  double distance = _calculateDistance(routes[0]);
+  _selectedPolylineDistance = distance.toStringAsFixed(2);
+
+  setState(() {});
+}
 
   Color _getRandomColor() {
     return Color((math.Random().nextDouble() * 0xFFFFFF).toInt() << 0)
@@ -265,6 +267,7 @@ class _MapScreenState extends State<PreviewScreen> {
             Positioned(
               bottom: 30.0,
               left: 27.0,
+              right: 27.0,
               child: Container(
                 padding: EdgeInsets.all(8.0),
                 decoration: BoxDecoration(

@@ -242,23 +242,23 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-
+ 
 class RealtimeNav extends StatefulWidget {
   final LatLng startLocation;
   final LatLng destination;
   final StreamController<LatLng> locationUpdateController;
-
+ 
   RealtimeNav({
     required this.startLocation,
     required this.destination,
     required this.locationUpdateController,
   });
-
+ 
   @override
   _RealtimeNavState createState() =>
       _RealtimeNavState(locationUpdateController: locationUpdateController);
 }
-
+ 
 class _RealtimeNavState extends State<RealtimeNav> {
   GoogleMapController? _controller;
   final StreamController<LatLng> locationUpdateController;
@@ -270,32 +270,32 @@ class _RealtimeNavState extends State<RealtimeNav> {
   bool _isNightMode = false; // for night mode
   FlutterTts flutterTts = FlutterTts();
   bool isMuted = false;
-
+ 
   late StreamSubscription<Position> _positionStream;
-
+ 
   _RealtimeNavState({required this.locationUpdateController});
-
+ 
   @override
   void initState() {
     super.initState();
-
+ 
     // Subscribe to location updates
     _positionStream = Geolocator.getPositionStream(
       desiredAccuracy: LocationAccuracy.best,
-      distanceFilter: 5, // Update every 5 meters
+      distanceFilter: 100, // Update every 5 meters
     ).listen((Position position) {
       setState(() {
         _currentLocation = LatLng(position.latitude, position.longitude);
       });
       _controller?.animateCamera(CameraUpdate.newLatLng(_currentLocation));
     });
-
+ 
     widget.locationUpdateController.stream.listen((location) async {
       setState(() {
         _currentLocation = location;
       });
       _controller?.animateCamera(CameraUpdate.newLatLng(location));
-
+ 
       // Configure text to speech only once
       flutterTts.setStartHandler(() {
         print("Text to speech started");
@@ -306,21 +306,21 @@ class _RealtimeNavState extends State<RealtimeNav> {
       flutterTts.setErrorHandler((msg) {
         print("Text to speech Error: $msg");
       });
-
+ 
       // Start navigation directions
       if (!_isNightMode && !_showBusStops) {
         _speakNavigationDirections();
       }
     });
   }
-
+ 
   @override
   void dispose() {
     // Cancel the location updates stream when the widget is disposed
     _positionStream.cancel();
     super.dispose();
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -340,23 +340,27 @@ class _RealtimeNavState extends State<RealtimeNav> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
+children: [
           FloatingActionButton(
+            heroTag: 'zoomInButton',
             onPressed: _zoomIn,
             child: Icon(Icons.zoom_in),
           ),
           SizedBox(height: 16),
           FloatingActionButton(
+            heroTag: 'zoomOutButton',
             onPressed: _zoomOut,
             child: Icon(Icons.zoom_out),
           ),
           SizedBox(height: 16),
           FloatingActionButton(
+            heroTag: 'recenterButton',
             onPressed: _recenter,
             child: Icon(Icons.my_location),
           ),
           SizedBox(height: 16),
           FloatingActionButton(
+            heroTag: 'themeButton',
             onPressed: () {
               setState(() {
                 _isNightMode = !_isNightMode;
@@ -365,13 +369,15 @@ class _RealtimeNavState extends State<RealtimeNav> {
               if (!_isNightMode && !_showBusStops) {
                 _speakNavigationDirections();
               } else {
-                flutterTts.stop(); // Stop speech if in night mode or showing bus stops
+                flutterTts
+                    .stop(); // Stop speech if in night mode or showing bus stops
               }
             },
             child: Icon(_isNightMode ? Icons.wb_sunny : Icons.nightlight_round),
           ),
           SizedBox(height: 16),
           FloatingActionButton(
+            heroTag: 'sosButton',
             onPressed: () {
               // Add your SOS button logic here
               _showSOSDialog();
@@ -386,6 +392,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
           ),
           SizedBox(height: 16),
           FloatingActionButton(
+            heroTag: 'audioButton',
             onPressed: () {
               setState(() {
                 isMuted = !isMuted;
@@ -403,7 +410,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
-
+ 
   Widget _buildMap() {
     return Stack(
       children: [
@@ -470,9 +477,9 @@ class _RealtimeNavState extends State<RealtimeNav> {
                 onPressed: () {
                   _startBikeNavigation();
                   setState(() {
-                    _showBusStops = true;
+                    // _showbikepath = true;
                   });
-                  _getBusStops();
+                  // _getBusStops();
                 },
                 child: Text('Bike Path Navigation'),
               ),
@@ -500,7 +507,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       widget.destination.latitude,
       widget.destination.longitude,
     );
-
+ 
     LatLngBounds bounds = LatLngBounds(
       southwest: LatLng(
         _currentLocation.latitude,
@@ -508,14 +515,14 @@ class _RealtimeNavState extends State<RealtimeNav> {
       ),
       northeast: widget.destination,
     );
-
+ 
     double padding = 50.0;
-
+ 
     CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(
       bounds,
       padding,
     );
-
+ 
     controller.animateCamera(cameraUpdate);
     double tilt = _calculateTilt(bearing);
     Future.delayed(Duration(milliseconds: 500), () {
@@ -560,12 +567,12 @@ class _RealtimeNavState extends State<RealtimeNav> {
       },
     );
   }
-
+ 
   void _startBikeNavigation() async {
     if (!_isNightMode &&!_showBusStops){
       _speakNavigationDirections();
     }
-
+ 
     // Existing code...
     const apiKey = 'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; // Replace with your API key
     final origin =
@@ -574,12 +581,12 @@ class _RealtimeNavState extends State<RealtimeNav> {
         '${widget.destination.latitude},${widget.destination.longitude}';
     final apiUrl = 'https://maps.googleapis.com/maps/api/directions/json?'
         'origin=$origin&destination=$destination&mode=bicycling&key=$apiKey';
-
+ 
     final response = await http.get(Uri.parse(apiUrl));
-
+ 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-
+ 
       if (data['status'] == 'OK') {
         final List<LatLng> points =
             _decodePolyline(data['routes'][0]['overview_polyline']['points']);
@@ -589,16 +596,16 @@ class _RealtimeNavState extends State<RealtimeNav> {
           width: 5,
           points: points,
         );
-
+ 
         LatLngBounds polylineBounds = _getPolylineBounds(points);
-
+ 
         _controller!.animateCamera(
           CameraUpdate.newLatLngBounds(
             polylineBounds,
             50.0,
           ),
         );
-
+ 
         setState(() {
           _polylines = {..._polylines, polyline};
         });
@@ -611,7 +618,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
     }
     
   }
-
+ 
   void _getBusStops() async {
     // Existing code...
     const apiKey = 'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; // Replace with your API key
@@ -619,12 +626,12 @@ class _RealtimeNavState extends State<RealtimeNav> {
         'origin=${widget.startLocation.latitude},${widget.startLocation.longitude}&'
         'destination=${widget.destination.latitude},${widget.destination.longitude}&'
         'mode=transit&key=$apiKey';
-
+ 
     final response = await http.get(Uri.parse(apiUrl));
-
+ 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-
+ 
       if (data['status'] == 'OK') {
         _displayBusStops(data['routes'][0]['legs'][0]['steps']);
       } else {
@@ -634,7 +641,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       print('Failed to fetch transit information. Status code: ${response.statusCode}');
     }
   }
-
+ 
   void _displayBusStops(List<dynamic> steps) {
     // Existing code...
     Set<Marker> busStopMarkers = {};
@@ -644,52 +651,52 @@ class _RealtimeNavState extends State<RealtimeNav> {
           step['start_location']['lat'],
           step['start_location']['lng'],
         );
-
+ 
         Marker busStopMarker = Marker(
           markerId: MarkerId('busStop-${busStopLocation.hashCode}'),
           position: busStopLocation,
           infoWindow: InfoWindow(title: 'Bus Stop'),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         );
-
+ 
         busStopMarkers.add(busStopMarker);
       }
     }
-
+ 
     setState(() {
       _busStopMarkers = busStopMarkers;
     });
   }
-
+ 
   LatLngBounds _getPolylineBounds(List<LatLng> points) {
     // Existing code...
     double minLat = double.infinity;
     double minLng = double.infinity;
     double maxLat = double.negativeInfinity;
     double maxLng = double.negativeInfinity;
-
+ 
     for (LatLng point in points) {
       double lat = point.latitude;
       double lng = point.longitude;
-
+ 
       minLat = min(minLat, lat);
       minLng = min(minLng, lng);
       maxLat = max(maxLat, lat);
       maxLng = max(maxLng, lng);
     }
-
+ 
     return LatLngBounds(
       southwest: LatLng(minLat, minLng),
       northeast: LatLng(maxLat, maxLng),
     );
   }
-
+ 
   List<LatLng> _decodePolyline(String encoded) {
     // Existing code...
     List<LatLng> points = [];
     int index = 0, len = encoded.length;
     int lat = 0, lng = 0;
-
+ 
     while (index < len) {
       int b, shift = 0, result = 0;
       do {
@@ -699,7 +706,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       } while (b >= 0x20);
       int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
       lat += dlat;
-
+ 
       shift = 0;
       result = 0;
       do {
@@ -709,12 +716,12 @@ class _RealtimeNavState extends State<RealtimeNav> {
       } while (b >= 0x20);
       int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
       lng += dlng;
-
+ 
       points.add(LatLng((lat / 1E5), (lng / 1E5)));
     }
     return points;
   }
-
+ 
   double _calculateBearing(
     double lat1,
     double lon1,
@@ -722,52 +729,52 @@ class _RealtimeNavState extends State<RealtimeNav> {
     double lon2,
   ) {
     // Existing code...
-
+ 
     double startLat = _degreesToRadians(lat1);
     double startLong = _degreesToRadians(lon1);
     double endLat = _degreesToRadians(lat2);
     double endLong = _degreesToRadians(lon2);
-
+ 
     double dLong = endLong - startLong;
-
+ 
     double dPhi = log(
-
+ 
       tan(endLat / 2.0 + pi / 4.0) /
           tan(startLat / 2.0 + pi / 4.0));
-
+ 
     double bearing = atan2(dLong, dPhi);
-
+ 
     bearing = _radiansToDegrees(bearing);
     bearing = (bearing + 360.0) % 360.0;
-
+ 
     return bearing;
   }
-
+ 
   double _radiansToDegrees(double radians) {
     // Existing code...
     return radians * (180.0 / pi);
   }
-
+ 
   double _degreesToRadians(double degrees) {
     // Existing code...
     return degrees * (pi / 180.0);
   }
-
+ 
   double _calculateTilt(double bearing) {
     // Existing code...
     const double maxTilt = 70.0;
     return _clamp(bearing.abs(), 0.0, maxTilt);
   }
-
+ 
   double _clamp(double value, double min, double max) {
     // Existing code...
     return value.clamp(min, max);
   }
-
+ 
   void _zoomIn() {
     _controller?.animateCamera(CameraUpdate.zoomIn());
   }
-
+ 
   void _zoomOut() {
     _controller?.animateCamera(CameraUpdate.zoomOut());
   }
@@ -777,5 +784,6 @@ class _RealtimeNavState extends State<RealtimeNav> {
       await flutterTts.speak("Start Navigation");
     }
   }
-
+ 
 }
+ 
