@@ -343,26 +343,6 @@ void _addPolylines() async {
               // ...
             ),
           ),
-          // if (_isNavigationStarted) // Show "Calm Route" label if navigation is started
-          //   Positioned(
-          //   top: 100.0,
-          //   left: 16.0,
-          //   child: Container(
-          //     padding: EdgeInsets.all(8.0),
-          //     decoration: BoxDecoration(
-          //       color: Colors.blue,
-          //       borderRadius: BorderRadius.circular(8.0),
-          //     ),
-          //     child: Text(
-          //       'Calm Route',
-          //       style: TextStyle(
-          //         color: Colors.white,
-          //         fontWeight: FontWeight.bold,
-          //         fontSize: 18.0,
-          //       ),
-          //     ),
-          //   ),
-          // ),
           Positioned(
             top: 50.0,
             right: 20.0,

@@ -7,23 +7,23 @@ import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/services.dart';
-
+ 
 class RealtimeNav extends StatefulWidget {
   final LatLng startLocation;
   final LatLng destination;
   final StreamController<LatLng> locationUpdateController;
-
+ 
   RealtimeNav({
     required this.startLocation,
     required this.destination,
     required this.locationUpdateController,
   });
-
+ 
   @override
   _RealtimeNavState createState() =>
       _RealtimeNavState(locationUpdateController: locationUpdateController);
 }
-
+ 
 class _RealtimeNavState extends State<RealtimeNav> {
   GoogleMapController? _controller;
   final StreamController<LatLng> locationUpdateController;
@@ -38,16 +38,18 @@ class _RealtimeNavState extends State<RealtimeNav> {
   bool _hasNavigationStarted = false;
   late String _darkMapStyle;
   late String _lightMapStyle;
-
+  Set<Marker> _markers = Set<Marker>();
+  bool setFirstTime = true;
+ 
   late StreamSubscription<Position> _positionStream;
-
+ 
   _RealtimeNavState({required this.locationUpdateController});
-
+ 
   Future<void> _loadMapStyles() async {
     _darkMapStyle = await rootBundle.loadString('assets/map_style/dark.json');
     _lightMapStyle = await rootBundle.loadString('assets/map_style/light.json');
   }
-
+ 
   void _toggleNightMode() {
     setState(() {
       _isNightMode = !_isNightMode;
@@ -60,29 +62,37 @@ class _RealtimeNavState extends State<RealtimeNav> {
       }
     });
   }
-
+ 
   @override
   void initState() {
     super.initState();
-
-    // Forlocation updates
+    // Initialize destination marker
+    _markers.add(
+      Marker(
+        markerId: MarkerId('destination'),
+        position: widget.destination,
+        infoWindow: InfoWindow(title: 'Destination'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      ),
+    );
+ 
+    // For location updates
     _positionStream = Geolocator.getPositionStream(
       desiredAccuracy: LocationAccuracy.best,
-      distanceFilter: 500, // Update every 500 meters
+      distanceFilter: 15, // Update every 500 meters
     ).listen((Position position) {
-      setState(() {
-        _currentLocation = LatLng(position.latitude, position.longitude);
-      });
-      _controller?.animateCamera(CameraUpdate.newLatLng(_currentLocation));
+     
+      _updateCurrentLocationMarker(
+          LatLng(position.latitude, position.longitude));
     });
-
     widget.locationUpdateController.stream.listen((location) async {
       setState(() {
-        _currentLocation = location;
+        if (setFirstTime) {
+          setFirstTime = !setFirstTime;
+          _currentLocation = location;
+        }
       });
-      _controller?.animateCamera(CameraUpdate.newLatLng(location));
-
-      // Configuring text to speech 
+      // Configuring text to speech
       flutterTts.setStartHandler(() {
         print("Text to speech started");
       });
@@ -92,7 +102,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       flutterTts.setErrorHandler((msg) {
         print("Text to speech Error: $msg");
       });
-
+ 
       // Start navigation directions
       if (!_isNightMode && !_showBusStops) {
         _speakNavigationDirections();
@@ -100,14 +110,41 @@ class _RealtimeNavState extends State<RealtimeNav> {
     });
     _loadMapStyles();
   }
-
+ 
+  void _updateCurrentLocationMarker(LatLng newLocation) {
+   
+    setState(() {
+      _currentLocation = newLocation;
+ 
+      
+      Marker? currentMarker;
+      for (var marker in _markers) {
+        if (marker.markerId == MarkerId('currentLocation')) {
+          currentMarker = marker;
+          break; // Stop the loop if we have found our marker
+        }
+      }
+ 
+      if (currentMarker != null) {
+        _markers.remove(currentMarker);
+      }
+      _markers.add(Marker(
+        markerId: MarkerId('currentLocation'),
+        position: _currentLocation,
+        infoWindow: InfoWindow(title: 'Current Location'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      ));
+    });
+    
+  }
+ 
   @override
   void dispose() {
     // Cancel the location updates stream when the widget is disposed
     _positionStream.cancel();
     super.dispose();
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,7 +152,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
         title: Text("Bike Navigation"),
       ),
       body: FutureBuilder(
-        future: Future.delayed(Duration(milliseconds: 500)),
+        future: Future.delayed(Duration(milliseconds: 200)),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return _buildMap();
@@ -150,14 +187,14 @@ class _RealtimeNavState extends State<RealtimeNav> {
             heroTag: 'themeButton',
             onPressed: () {
               setState(() {
+                isMuted = true;
                 _isNightMode = !_isNightMode;
-                isMuted = false; // Reset the mute state when switching modes
+                 // Reset the mute state when switching modes
               });
               if (!_isNightMode && !_showBusStops) {
                 _speakNavigationDirections();
               } else {
-                flutterTts
-                    .stop(); // Stop speech 
+                flutterTts.stop(); // Stop speech
               }
             },
             child: Icon(_isNightMode ? Icons.wb_sunny : Icons.nightlight_round),
@@ -197,58 +234,38 @@ class _RealtimeNavState extends State<RealtimeNav> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
-
+ 
   Widget _buildMap() {
+    LatLng initialTarget = _currentLocation.latitude == 0.0 &&
+            _currentLocation.longitude == 0.0
+        ? widget
+            .startLocation // fallback to startLocation if current location is not available
+        : _currentLocation;
+ 
     return Stack(
       children: [
-        Padding(
-          padding: EdgeInsets.only(bottom: 0, left: 0, right: 0),
-          child: GoogleMap(
-            onMapCreated: (controller) {
-              _controller = controller;
-              if (!_hasNavigationStarted) {
-                _startBikeNavigation();
-                _recenter(); // should comment out
-                _hasNavigationStarted = true;
-              }
-              if (_isNightMode) {
-                _controller?.setMapStyle(_darkMapStyle);
-              }
-            },
-            initialCameraPosition: CameraPosition(
-              target: widget.startLocation,
-              zoom: 15.0,
-            ),
-            markers: {
-              Marker(
-                markerId: MarkerId('start'),
-                position: widget.startLocation,
-                icon: BitmapDescriptor.defaultMarkerWithHue(
-                  BitmapDescriptor.hueBlue,
-                ),
-              ),
-              Marker(
-                markerId: MarkerId('destination'),
-                position: widget.destination,
-                infoWindow: InfoWindow(title: 'Destination'),
-              ),
-              Marker(
-                markerId: MarkerId('currentLocation'),
-                position: _currentLocation,
-                infoWindow: InfoWindow(title: 'Current Location'),
-                icon: BitmapDescriptor.defaultMarkerWithHue(
-                  BitmapDescriptor.hueBlue,
-                ),
-              ),
-              ..._busStopMarkers,
-            },
-            mapType: _isSatelliteView ? MapType.satellite : MapType.normal,
-            polylines: _polylines,
-            onCameraMove: (CameraPosition position) {
-              
-            },
-            myLocationButtonEnabled: false,
+        GoogleMap(
+          onMapCreated: (controller) {
+            _controller = controller;
+            if (!_hasNavigationStarted) {
+              _startBikeNavigation(); // Make sure this method is defined in your class
+              _recenter();
+              _hasNavigationStarted = true;
+            }
+            if (_isNightMode) {
+              _controller?.setMapStyle(_darkMapStyle);
+            }
+          },
+          initialCameraPosition: CameraPosition(
+            target: initialTarget,
+            zoom: 18.0,
           ),
+          markers:
+              _markers, // This includes all markers, including current location
+          mapType: _isSatelliteView ? MapType.satellite : MapType.normal,
+          polylines: _polylines,
+          onCameraMove: (CameraPosition position) {},
+          myLocationButtonEnabled: false,
         ),
         Positioned(
           top: 20.0,
@@ -283,7 +300,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       ],
     );
   }
-
+ 
   void _recenter() async {
     final GoogleMapController controller = _controller!;
     double bearing = _calculateBearing(
@@ -292,7 +309,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       widget.destination.latitude,
       widget.destination.longitude,
     );
-
+ 
     LatLngBounds bounds = LatLngBounds(
       southwest: LatLng(
         _currentLocation.latitude,
@@ -300,32 +317,32 @@ class _RealtimeNavState extends State<RealtimeNav> {
       ),
       northeast: widget.destination,
     );
-
+ 
     double padding = 50.0;
-
+ 
     CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(
       bounds,
       padding,
     );
-
+ 
     controller.animateCamera(cameraUpdate);
     double tilt = _calculateTilt(bearing);
     Future.delayed(Duration(milliseconds: 500), () {
       double tilt = _calculateTilt(bearing);
       if (_isSatelliteView || _isNightMode) {
-        // For satellite view, set tilt to 0
+        // For satellite view, set tilt to 40.0
         tilt = 40.0;
-        // zoom :15; // comment out
+        
       }
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-        target: widget.startLocation,
-        zoom: 17.0,
+        target: _currentLocation,
+        zoom: 19.0,
         bearing: bearing,
         tilt: tilt,
       )));
     });
   }
-
+ 
   void _showSOSDialog() {
     showDialog(
       context: context,
@@ -354,26 +371,25 @@ class _RealtimeNavState extends State<RealtimeNav> {
       },
     );
   }
-
+ 
   void _startBikeNavigation() async {
     if (!_isNightMode && !_showBusStops) {
       _speakNavigationDirections();
     }
-
-    const apiKey =
-        'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; //API Key
+ 
+    const apiKey = 'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; //API Key
     final origin =
         '${widget.startLocation.latitude},${widget.startLocation.longitude}';
     final destination =
         '${widget.destination.latitude},${widget.destination.longitude}';
     final apiUrl = 'https://maps.googleapis.com/maps/api/directions/json?'
         'origin=$origin&destination=$destination&mode=bicycling&key=$apiKey';
-
+ 
     final response = await http.get(Uri.parse(apiUrl));
-
+ 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-
+ 
       if (data['status'] == 'OK') {
         final List<LatLng> points =
             _decodePolyline(data['routes'][0]['overview_polyline']['points']);
@@ -383,16 +399,16 @@ class _RealtimeNavState extends State<RealtimeNav> {
           width: 5,
           points: points,
         );
-
+ 
         LatLngBounds polylineBounds = _getPolylineBounds(points);
-
+ 
         _controller!.animateCamera(
           CameraUpdate.newLatLngBounds(
             polylineBounds,
             50.0,
           ),
         );
-
+ 
         setState(() {
           _polylines = {..._polylines, polyline};
         });
@@ -403,21 +419,19 @@ class _RealtimeNavState extends State<RealtimeNav> {
       print('Failed to fetch directions. Status code: ${response.statusCode}');
     }
   }
-
+ 
   void _getBusStops() async {
-    
-    const apiKey =
-        'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY'; 
+    const apiKey = 'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY';
     final apiUrl = 'https://maps.googleapis.com/maps/api/directions/json?'
         'origin=${widget.startLocation.latitude},${widget.startLocation.longitude}&'
         'destination=${widget.destination.latitude},${widget.destination.longitude}&'
         'mode=transit&alternatives=true&key=$apiKey';
-
+ 
     final response = await http.get(Uri.parse(apiUrl));
-
+ 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-
+ 
       if (data['status'] == 'OK') {
         _displayBusStops(data['routes'][0]['legs'][0]['steps']);
       } else {
@@ -428,19 +442,18 @@ class _RealtimeNavState extends State<RealtimeNav> {
           'Failed to fetch transit information. Status code: ${response.statusCode}');
     }
   }
-
+ 
   void _displayBusStops(List<dynamic> steps) {
-  
     Set<Marker> busStopMarkers = {};
     int transitStopsCount = 0; // Counter for transit stops
-
+ 
     for (var step in steps) {
       if (step['transit_details'] != null) {
         final LatLng busStopLocation = LatLng(
           step['start_location']['lat'],
           step['start_location']['lng'],
         );
-
+ 
         Marker busStopMarker = Marker(
           markerId: MarkerId('busStop-${busStopLocation.hashCode}'),
           position: busStopLocation,
@@ -448,49 +461,47 @@ class _RealtimeNavState extends State<RealtimeNav> {
           icon:
               BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         );
-
+ 
         busStopMarkers.add(busStopMarker);
         transitStopsCount++;
-        if(transitStopsCount >=3){
+        if (transitStopsCount >= 3) {
           break;
         }
       }
     }
-
+ 
     setState(() {
       _busStopMarkers = busStopMarkers;
     });
   }
-
+ 
   LatLngBounds _getPolylineBounds(List<LatLng> points) {
-    
     double minLat = double.infinity;
     double minLng = double.infinity;
     double maxLat = double.negativeInfinity;
     double maxLng = double.negativeInfinity;
-
+ 
     for (LatLng point in points) {
       double lat = point.latitude;
       double lng = point.longitude;
-
+ 
       minLat = min(minLat, lat);
       minLng = min(minLng, lng);
       maxLat = max(maxLat, lat);
       maxLng = max(maxLng, lng);
     }
-
+ 
     return LatLngBounds(
       southwest: LatLng(minLat, minLng),
       northeast: LatLng(maxLat, maxLng),
     );
   }
-
+ 
   List<LatLng> _decodePolyline(String encoded) {
-    
     List<LatLng> points = [];
     int index = 0, len = encoded.length;
     int lat = 0, lng = 0;
-
+ 
     while (index < len) {
       int b, shift = 0, result = 0;
       do {
@@ -500,7 +511,7 @@ class _RealtimeNavState extends State<RealtimeNav> {
       } while (b >= 0x20);
       int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
       lat += dlat;
-
+ 
       shift = 0;
       result = 0;
       do {
@@ -510,67 +521,61 @@ class _RealtimeNavState extends State<RealtimeNav> {
       } while (b >= 0x20);
       int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
       lng += dlng;
-
+ 
       points.add(LatLng((lat / 1E5), (lng / 1E5)));
     }
     return points;
   }
-
+ 
   double _calculateBearing(
     double lat1,
     double lon1,
     double lat2,
     double lon2,
   ) {
-    
-
     double startLat = _degreesToRadians(lat1);
     double startLong = _degreesToRadians(lon1);
     double endLat = _degreesToRadians(lat2);
     double endLong = _degreesToRadians(lon2);
-
+ 
     double dLong = endLong - startLong;
-
+ 
     double dPhi =
         log(tan(endLat / 2.0 + pi / 4.0) / tan(startLat / 2.0 + pi / 4.0));
-
+ 
     double bearing = atan2(dLong, dPhi);
-
+ 
     bearing = _radiansToDegrees(bearing);
     bearing = (bearing + 360.0) % 360.0;
-
+ 
     return bearing;
   }
-
+ 
   double _radiansToDegrees(double radians) {
-    
     return radians * (180.0 / pi);
   }
-
+ 
   double _degreesToRadians(double degrees) {
-    
     return degrees * (pi / 180.0);
   }
-
+ 
   double _calculateTilt(double bearing) {
-    
     const double maxTilt = 70.0;
     return _clamp(bearing.abs(), 0.0, maxTilt);
   }
-
+ 
   double _clamp(double value, double min, double max) {
-    
     return value.clamp(min, max);
   }
-
+ 
   void _zoomIn() {
     _controller?.animateCamera(CameraUpdate.zoomIn());
   }
-
+ 
   void _zoomOut() {
     _controller?.animateCamera(CameraUpdate.zoomOut());
   }
-
+ 
   void _speakNavigationDirections() async {
     //for text to speech
     if (!isMuted) {
