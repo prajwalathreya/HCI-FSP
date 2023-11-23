@@ -4,7 +4,7 @@
             "outputFile": "com.example.fsp.app-mergeDebugResources-14:/values-kk/values-kk.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\e6f6f685b3fe7a2d8fb2f09ebfe40fb2\\transformed\\jetified-play-services-basement-18.1.0\\res\\values-kk\\values.xml",
+                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\73f3e89a5b72add012c18dd9bcc4a502\\transformed\\jetified-play-services-basement-18.1.0\\res\\values-kk\\values.xml",
                     "from": {
                         "startLines": "4",
                         "startColumns": "0",
@@ -21,24 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\f2c1b21e2617b8adc4232d8977a76481\\transformed\\core-1.10.1\\res\\values-kk\\values-kk.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,150,252,354,457,561,658,769",
-                        "endColumns": "94,101,101,102,103,96,110,100",
-                        "endOffsets": "145,247,349,452,556,653,764,865"
-                    },
-                    "to": {
-                        "startLines": "2,3,4,5,6,7,8,27",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,150,252,354,457,561,658,2986",
-                        "endColumns": "94,101,101,102,103,96,110,100",
-                        "endOffsets": "145,247,349,452,556,653,764,3082"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\07634d2838796d427d5cb44d7b403d6b\\transformed\\jetified-play-services-base-18.1.0\\res\\values-kk\\values.xml",
+                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\f3f78e0ac3c0e825cf11e86241325083\\transformed\\jetified-play-services-base-18.1.0\\res\\values-kk\\values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
                         "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -52,6 +35,23 @@
                         "startOffsets": "769,872,1025,1151,1257,1397,1523,1646,1919,2084,2190,2347,2476,2629,2786,2849,2908",
                         "endColumns": "102,152,125,105,139,125,122,108,164,105,156,128,152,156,62,58,77",
                         "endOffsets": "867,1020,1146,1252,1392,1518,1641,1750,2079,2185,2342,2471,2624,2781,2844,2903,2981"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\da6f769dd2fe62bae500e425de7a6811\\transformed\\core-1.10.1\\res\\values-kk\\values-kk.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,150,252,354,457,561,658,769",
+                        "endColumns": "94,101,101,102,103,96,110,100",
+                        "endOffsets": "145,247,349,452,556,653,764,865"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,27",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,150,252,354,457,561,658,2986",
+                        "endColumns": "94,101,101,102,103,96,110,100",
+                        "endOffsets": "145,247,349,452,556,653,764,3082"
                     }
                 }
             ]

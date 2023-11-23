@@ -11,11 +11,11 @@ class MapPage extends StatelessWidget {
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
           target: LatLng(
-              41.87147111568681, -87.66197876214603), // Initial map coordinates
-          zoom: 14.0, // Zoom level
+              41.87147111568681, -87.66197876214603), // Initial coordinates
+          zoom: 14.0, // for zoom
         ),
         onMapCreated: (GoogleMapController controller) {
-          // You can use the controller to interact with the map.
+          
         },
       ),
     );

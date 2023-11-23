@@ -1,10 +1,8 @@
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_place/google_place.dart';
 import 'package:fsp/MapUtils.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' show Polyline, PolylineId;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math' as math;
@@ -22,11 +20,14 @@ class PreviewScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<PreviewScreen> {
+  bool _isNavigationStarted = false; // new line added for calm routes
   late CameraPosition _initialPosition;
   final Completer<GoogleMapController> _controller = Completer();
   List<Polyline> _polylines = [];
   late String _selectedPolylineDistance = '';
-  StreamController<LatLng> _locationUpdateController = StreamController<LatLng>();
+  StreamController<LatLng> _locationUpdateController =
+      StreamController<LatLng>();
+  // int _selectedPolylineIndex = -1;
 
   Future<List<List<LatLng>>> getDirections() async {
     final apiKey = 'AIzaSyDkKbK_K-0WJuhGvvSbmSL5pEoCiBSWNqY';
@@ -43,6 +44,8 @@ class _MapScreenState extends State<PreviewScreen> {
         for (var route in decodedResponse['routes']) {
           List<LatLng> points = [];
 
+          List<Text> instructions = [];
+
           for (var leg in route['legs']) {
             for (var step in leg['steps']) {
               points.add(LatLng(
@@ -53,6 +56,8 @@ class _MapScreenState extends State<PreviewScreen> {
                 step['end_location']['lat'],
                 step['end_location']['lng'],
               ));
+
+              instructions.add(Text(step['html_instructions']));
             }
           }
 
@@ -69,26 +74,42 @@ class _MapScreenState extends State<PreviewScreen> {
   void _addPolylines() async {
     List<List<LatLng>> routes = await getDirections();
 
-    _polylines.clear(); // Clear previous polylines
+    _polylines.clear(); // Clears all the previous polylines NEW
+    double minDistance = double.infinity; // Initialize with a large value  NEW
+    int calmRouteIndex = 0; // Index of the calm route NEW
 
     for (int i = 0; i < routes.length; i++) {
       PolylineId polylineId = PolylineId('polyline_$i');
       Color color = _getRandomColor();
+      int width = 5; //for non - calm routes
+      // Check if this is the calm route and set a different width
+      if (i == calmRouteIndex) {
+        color = Color.fromARGB(255, 12, 240, 12); // Green color for calm route
+        width = 14; // Increase width for the calm route
+      }
       _polylines.add(Polyline(
         polylineId: polylineId,
         color: color,
+        width: width,
         points: routes[i],
         onTap: () {
           _onPolylineTapped(routes[i]);
         },
       ));
+      // Calculate distance for each route and find the calm route
+      double distance = _calculateDistance(routes[i]);
+      if (distance < minDistance) {
+        minDistance = distance;
+        calmRouteIndex = i;
+      }
     }
 
-    // Set the selected polyline distance to the distance of the first polyline
     double distance = _calculateDistance(routes[0]);
     _selectedPolylineDistance = distance.toStringAsFixed(2);
 
-    setState(() {});
+    setState(() {
+      _isNavigationStarted = true;
+    });
   }
 
   Color _getRandomColor() {
@@ -103,7 +124,7 @@ class _MapScreenState extends State<PreviewScreen> {
       _selectedPolylineDistance = distanceString;
     });
 
-    // Show a bottom sheet with the distance information
+    // printing distance to destination
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -135,7 +156,7 @@ class _MapScreenState extends State<PreviewScreen> {
 
   double _calculateDistanceBetweenPoints(
       double lat1, double lon1, double lat2, double lon2) {
-    const double earthRadius = 3958.8; // in miles
+    const double earthRadius = 3958.8; // for getting distance in miles
 
     double dLat = _degreesToRadians(lat2 - lat1);
     double dLon = _degreesToRadians(lon2 - lon1);
@@ -158,7 +179,7 @@ class _MapScreenState extends State<PreviewScreen> {
   Future<void> _showSOSDialog() async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // user must tap button for close dialog!
+      barrierDismissible: false, // tap button for close dialog!
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Call 911'),
@@ -265,6 +286,7 @@ class _MapScreenState extends State<PreviewScreen> {
             Positioned(
               bottom: 30.0,
               left: 27.0,
+              right: 27.0,
               child: Container(
                 padding: EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
@@ -283,8 +305,6 @@ class _MapScreenState extends State<PreviewScreen> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        // Navigate to the next page for navigation
-                        // Replace `NextPage` with the actual navigation page
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -292,13 +312,13 @@ class _MapScreenState extends State<PreviewScreen> {
                               startLocation: LatLng(
                                 widget.startPosition!.geometry!.location!.lat!,
                                 widget.startPosition!.geometry!.location!.lng!,
-
                               ),
                               destination: LatLng(
                                 widget.endPosition!.geometry!.location!.lat!,
                                 widget.endPosition!.geometry!.location!.lng!,
                               ),
-                              locationUpdateController: _locationUpdateController,
+                              locationUpdateController:
+                                  _locationUpdateController,
                             ),
                           ),
                         );
@@ -308,19 +328,28 @@ class _MapScreenState extends State<PreviewScreen> {
                     SizedBox(height: 8.0),
                     Text(
                       'Distance to Destination: $_selectedPolylineDistance miles',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20.0),
                     ),
                   ],
                 ),
               ),
+            ),
+          if (_selectedPolylineDistance.isNotEmpty)
+            Positioned(
+              bottom: 30.0,
+              left: 27.0,
+              right: 27.0,
+              child: Container(
+                  // ...
+                  ),
             ),
           Positioned(
             top: 50.0,
             right: 20.0,
             child: ElevatedButton(
               onPressed: () {
-                // Show SOS dialog
+                // To show SOS dialog
                 _showSOSDialog();
               },
               style: ElevatedButton.styleFrom(
@@ -347,11 +376,3 @@ class _MapScreenState extends State<PreviewScreen> {
     super.dispose();
   }
 }
-
-
-
-
-
-
-
-

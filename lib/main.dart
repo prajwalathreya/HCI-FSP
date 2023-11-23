@@ -1,5 +1,3 @@
-
-// import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:fsp/NavigationPage.dart';
 import 'package:provider/provider.dart';
@@ -28,19 +26,54 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  // var current = WordPair.random();
   void getNext() {
-    // current = WordPair.random();
     notifyListeners();
   }
 }
 
 class MyHomePage extends StatelessWidget {
+  Future<void> _showSOSDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Call 911'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Do you want to call 911?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                //Yes
+                print("Calling 911");
+                Navigator.of(context).pop();
+              },
+              child: Text('Yes'),
+            ),
+            TextButton(
+              onPressed: () {
+                //No
+                print("Cancel SOS");
+                Navigator.of(context).pop();
+              },
+              child: Text('No'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.width < 600; // Adjust the threshold as needed
+    final isSmallScreen = screenSize.width < 600;
 
     return Scaffold(
       body: Stack(
@@ -48,7 +81,8 @@ class MyHomePage extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/black-grey-chicago-city-area-background-map-vector-37821140.jpg'),
+                image: AssetImage(
+                    'assets/black-grey-chicago-city-area-background-map-vector-37821140.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -61,7 +95,6 @@ class MyHomePage extends StatelessWidget {
                     alignment: Alignment.topCenter,
                     child: Text(
                       "Bike Navigation System\n Welcome Bikers",
-                      // "Welcome Bikers",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
@@ -69,18 +102,12 @@ class MyHomePage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Text(
-                    // appState.current.asPascalCase,
-                    // style: TextStyle(
-                      // color: Colors.white,
-                      // fontSize: isSmallScreen ? 16.0 : 20.0,
-                  //   // ),
-                  // ),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => NavigationPage()),
+                        MaterialPageRoute(
+                            builder: (context) => NavigationPage()),
                       );
                       print("Hello, you pressed this button");
                     },
@@ -95,7 +122,7 @@ class MyHomePage extends StatelessWidget {
             right: 20.0,
             child: ElevatedButton(
               onPressed: () {
-                // Add your logic for the circular button here
+                _showSOSDialog(context); // calling SOS function
               },
               style: ElevatedButton.styleFrom(
                 shape: CircleBorder(),

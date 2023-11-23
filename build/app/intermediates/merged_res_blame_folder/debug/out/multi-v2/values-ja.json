@@ -4,7 +4,7 @@
             "outputFile": "com.example.fsp.app-mergeDebugResources-14:/values-ja/values-ja.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\07634d2838796d427d5cb44d7b403d6b\\transformed\\jetified-play-services-base-18.1.0\\res\\values-ja\\values.xml",
+                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\f3f78e0ac3c0e825cf11e86241325083\\transformed\\jetified-play-services-base-18.1.0\\res\\values-ja\\values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
                         "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\e6f6f685b3fe7a2d8fb2f09ebfe40fb2\\transformed\\jetified-play-services-basement-18.1.0\\res\\values-ja\\values.xml",
+                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\73f3e89a5b72add012c18dd9bcc4a502\\transformed\\jetified-play-services-basement-18.1.0\\res\\values-ja\\values.xml",
                     "from": {
                         "startLines": "4",
                         "startColumns": "0",
@@ -38,7 +38,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\f2c1b21e2617b8adc4232d8977a76481\\transformed\\core-1.10.1\\res\\values-ja\\values-ja.xml",
+                    "source": "C:\\Users\\ridhu\\.gradle\\caches\\transforms-3\\da6f769dd2fe62bae500e425de7a6811\\transformed\\core-1.10.1\\res\\values-ja\\values-ja.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
