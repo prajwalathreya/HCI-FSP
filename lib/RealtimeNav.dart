@@ -44,7 +44,8 @@ class _RealtimeNavState extends State<RealtimeNav> {
   bool _showBusStops = false;
   Set<Polyline> _polylines = {};
   Set<Marker> _busStopMarkers = {};
-  String _currentInstruction = ""; // State variable for current instruction
+  String _currentInstruction =
+      "Start Navigation"; // State variable for current instruction
   bool _isNightMode = false; // for changing modes
   FlutterTts flutterTts = FlutterTts();
   bool isMuted = false;
