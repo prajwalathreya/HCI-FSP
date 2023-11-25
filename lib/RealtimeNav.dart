@@ -182,6 +182,15 @@ class _RealtimeNavState extends State<RealtimeNav> {
           // Increment the index or set a timer to repeat the instruction
           // Ensure the instruction is not repeated too frequently
         }
+
+        if (currentStepIndex == globalNavigationSteps.length - 1) {
+          String nextInstruction = "Your destination is nearby";
+          _speakNavigationDirections(nextInstruction);
+          setState(() {
+            _currentInstruction =
+                nextInstruction; // Update the instruction to be displayed
+          });
+        }
         currentStepIndex++; // Move to the next step
       }
     }
