@@ -95,11 +95,6 @@ class _RealtimeNavState extends State<RealtimeNav> {
       distanceFilter: 15,
     );
 
-    // For location updates
-    // _positionStream = Geolocator.getPositionStream(
-    //   desiredAccuracy: LocationAccuracy.best,
-    //   distanceFilter: 15, // Update every 500 meters
-    // )
     _positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
             .listen((Position position) {
@@ -562,8 +557,11 @@ class _RealtimeNavState extends State<RealtimeNav> {
   }
 
   String processInstructions(String instruction) {
-    String processedInstruction =
-        instruction.replaceAll('<b>', '').replaceAll('</b>', '');
+    String processedInstruction = instruction
+        .replaceAll("<b>", "")
+        .replaceAll("</b>", "")
+        .replaceAll("<div>.*?</div>",
+            ""); // This line removes content between <div> and </div>
     return processedInstruction;
   }
 
